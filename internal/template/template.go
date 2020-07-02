@@ -92,7 +92,7 @@ func produceTemplate(name string, angleOffset int, scale int, length int, shiftA
 		}
 
 		if length == 12 {
-			jogglingSize = -1
+			jogglingSize = 0
 		}
 
 		if length == 13 {
