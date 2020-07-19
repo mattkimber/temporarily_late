@@ -34,6 +34,7 @@ type Manifest struct {
 	FadeToBlack          bool             `json:"fade_to_black"`
 	EdgeThreshold        float64          `json:"alpha_edge_threshold"`
 	PadToFullLength      bool             `json:"pad_to_full_length"`
+	IsHill               bool             `json:"is_hill"`
 }
 
 func FromJson(handle io.Reader) (manifest Manifest, err error) {
@@ -65,7 +66,6 @@ func (m *Manifest) GetFromReader(handle io.Reader) (err error) {
 	*m, err = FromJson(handle)
 	return err
 }
-
 
 func (m *Manifest) SetSpriteSizes() {
 	// Set any auto-height sprites
