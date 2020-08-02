@@ -150,7 +150,7 @@ func produceHillTemplate(name string, scale float64, length int, hillJoggles map
 
 			fscale := scale
 
-			xrel, yrel := getRels(w, h, scale, length, direction, fscale, 0)
+			xrel, yrel := getRels(w, h, scale, length, direction, fscale, 0, 0)
 
 			yrel += 0.25 * float64(length) * scale
 			yrel += hillJoggles[i] * scale
@@ -178,7 +178,7 @@ func produceFlatTemplate(name string, angleOffset int, scale float64, length int
 
 		fscale := scale
 
-		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset)
+		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset, offsetWithinFile)
 
 		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
 	}
@@ -186,7 +186,7 @@ func produceFlatTemplate(name string, angleOffset int, scale float64, length int
 	fmt.Printf("}\n\n")
 }
 
-func getRels(w float64, h float64, scale float64, length int, direction int, fscale float64, unitOffset int) (xrel float64, yrel float64) {
+func getRels(w float64, h float64, scale float64, length int, direction int, fscale float64, unitOffset int, offsetWithinFile int) (xrel float64, yrel float64) {
 	// Set xrel and yrel to the middle of the object
 	xrel = -(w / 2)
 	yrel = -(h / 2)
@@ -204,7 +204,14 @@ func getRels(w float64, h float64, scale float64, length int, direction int, fsc
 
 		// mysterious alignment voodoo
 		if length == 10 || length == 11 {
-			diff -= 1
+			diff -= 0
+		}
+	}
+
+	if unitOffset == 0 && offsetWithinFile > 0 {
+		// mysterious alignment voodoo
+		if length == 10 || length == 11 {
+			diff += 1
 		}
 	}
 
@@ -215,7 +222,7 @@ func getRels(w float64, h float64, scale float64, length int, direction int, fsc
 
 		// mysterious alignment voodoo
 		if length == 10 || length == 11 {
-			diff -= 2
+			diff -= 1
 		}
 	}
 
