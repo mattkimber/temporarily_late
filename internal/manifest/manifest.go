@@ -35,6 +35,7 @@ type Manifest struct {
 	EdgeThreshold        float64          `json:"alpha_edge_threshold"`
 	PadToFullLength      bool             `json:"pad_to_full_length"`
 	IsHill               bool             `json:"is_hill"`
+	SliceLength          int              `json:"slice_length"`
 }
 
 func FromJson(handle io.Reader) (manifest Manifest, err error) {

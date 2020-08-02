@@ -84,8 +84,8 @@ var configs = map[int][]int{
 	7:  {2, 3, 2},
 	8:  {2, 4, 2},
 	9:  {2, 5, 2},
-	10: {4, 2, 4},
-	11: {4, 3, 4},
+	10: {3, 4, 3},
+	11: {3, 5, 3},
 	12: {4, 4, 4},
 	13: {4, 5, 4},
 	14: {4, 6, 4},
@@ -109,6 +109,12 @@ func WriteTemplates(m manifest.Manifest) {
 func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 	spritemap := make(map[int]manifest.Sprite)
 	tx := 0
+
+	// This is a bit of a hack for slice length files
+	if m.SliceLength > 0 {
+		m.Sprites = m.Sprites[0:8]
+	}
+
 	for _, spr := range m.Sprites {
 		spr.X = tx
 		spritemap[int(spr.Angle)] = spr
@@ -118,10 +124,14 @@ func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 	if m.IsHill {
 		produceHillTemplate("_up", scale, length, uphillJoggles, spritemap)
 		produceHillTemplate("_down", scale, length, downhillJoggles, spritemap)
-	} else {
-		produceFlatTemplate("", 0, scale, length, 0, spritemap)
-		produceFlatTemplate("_turn_1", 15, scale, length, 0, spritemap)
-		produceFlatTemplate("_turn_2", 30, scale, length, -45, spritemap)
+	} else if m.SliceLength > 0 && length > 8 {
+		produceFlatTemplate("_front", 0, scale, length, 0, 0, -1, spritemap)
+		produceFlatTemplate("_mid", 0, scale, length, 0, 348, 0, spritemap)
+		produceFlatTemplate("_rear", 0, scale, length, 0, 348*2, 1, spritemap)
+	} else if m.SliceLength == 0 {
+		produceFlatTemplate("", 0, scale, length, 0, 0, 0, spritemap)
+		produceFlatTemplate("_turn_1", 15, scale, length, 0, 0,0, spritemap)
+		produceFlatTemplate("_turn_2", 30, scale, length, -45, 0, 0, spritemap)
 	}
 }
 
@@ -140,7 +150,7 @@ func produceHillTemplate(name string, scale float64, length int, hillJoggles map
 
 			fscale := scale
 
-			xrel, yrel := getRels(w, h, scale, length, direction, fscale)
+			xrel, yrel := getRels(w, h, scale, length, direction, fscale, 0)
 
 			yrel += 0.25 * float64(length) * scale
 			yrel += hillJoggles[i] * scale
@@ -154,7 +164,7 @@ func produceHillTemplate(name string, scale float64, length int, hillJoggles map
 	fmt.Printf("}\n\n")
 }
 
-func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, spritemap map[int]manifest.Sprite) {
+func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, offsetWithinFile int, unitOffset int, spritemap map[int]manifest.Sprite) {
 	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
 
 	// Basic template
@@ -162,13 +172,13 @@ func produceFlatTemplate(name string, angleOffset int, scale float64, length int
 		direction := i - angleOffset
 		spr := spritemap[(i+360+shiftAngle)%360]
 
-		x := float64(spr.X) * scale
+		x := float64(spr.X + offsetWithinFile) * scale
 		w := float64(spr.Width) * scale
 		h := float64(spr.Height) * scale
 
 		fscale := scale
 
-		xrel, yrel := getRels(w, h, scale, length, direction, fscale)
+		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset)
 
 		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
 	}
@@ -176,7 +186,7 @@ func produceFlatTemplate(name string, angleOffset int, scale float64, length int
 	fmt.Printf("}\n\n")
 }
 
-func getRels(w float64, h float64, scale float64, length int, direction int, fscale float64) (xrel float64, yrel float64) {
+func getRels(w float64, h float64, scale float64, length int, direction int, fscale float64, unitOffset int) (xrel float64, yrel float64) {
 	// Set xrel and yrel to the middle of the object
 	xrel = -(w / 2)
 	yrel = -(h / 2)
@@ -185,6 +195,29 @@ func getRels(w float64, h float64, scale float64, length int, direction int, fsc
 	// joggle top left to the centre of the centre unit
 	midSize := configs[length][1]
 	diff := float64(8-midSize) / 2
+
+	// Joggle backward (or forward) for front and rear sections.
+	if unitOffset == -1 {
+		sectionSize := configs[length][0]
+		sectionDiff := float64(sectionSize)
+		diff -= sectionDiff
+
+		// mysterious alignment voodoo
+		if length == 10 || length == 11 {
+			diff -= 1
+		}
+	}
+
+	if unitOffset == 1 {
+		sectionSize := configs[length][1]
+		sectionDiff := float64(sectionSize)
+		diff += sectionDiff
+
+		// mysterious alignment voodoo
+		if length == 10 || length == 11 {
+			diff -= 2
+		}
+	}
 
 	// Special handling for L4 vehicles
 	if length == 4 {
