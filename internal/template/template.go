@@ -5,7 +5,7 @@ import (
 	"github.com/mattkimber/temporarily-late/internal/manifest"
 )
 
-const yjoggle = 4
+const yjoggle = 3
 
 // TTD bounding boxes
 
@@ -202,10 +202,6 @@ func getRels(w float64, h float64, scale float64, length int, direction int, fsc
 		sectionDiff := float64(sectionSize)
 		diff -= sectionDiff
 
-		// mysterious alignment voodoo
-		if length == 10 || length == 11 {
-			diff -= 0
-		}
 	}
 
 	if unitOffset == 0 && offsetWithinFile > 0 {
