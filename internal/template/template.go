@@ -48,14 +48,14 @@ var uphillJoggles = map[int]float64 {
 	45: -1,
 	135: 0,
 	225: 0,
-	315: -3,
+	315: -1,
 }
 
 var downhillJoggles = map[int]float64 {
 	45: 0,
-	135: -2,
+	135: -1,
 	225: -1,
-	315: 1,
+	315: 0,
 }
 
 // sprite top left is always 4 from front of relevant unit
