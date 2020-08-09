@@ -126,8 +126,8 @@ func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 		produceHillTemplate("_down", scale, length, downhillJoggles, spritemap)
 	} else if m.SliceLength > 0 && length > 8 {
 		produceFlatTemplate("_front", 0, scale, length, 0, 0, -1, spritemap)
-		produceFlatTemplate("_mid", 0, scale, length, 0, 348, 0, spritemap)
-		produceFlatTemplate("_rear", 0, scale, length, 0, 348*2, 1, spritemap)
+		produceFlatTemplate("_mid", 0, scale, length, 0, tx, 0, spritemap)
+		produceFlatTemplate("_rear", 0, scale, length, 0, tx*2, 1, spritemap)
 	} else if m.SliceLength == 0 {
 		produceFlatTemplate("", 0, scale, length, 0, 0, 0, spritemap)
 		produceFlatTemplate("_turn_1", 15, scale, length, 0, 0,0, spritemap)
