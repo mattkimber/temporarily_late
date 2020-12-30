@@ -44,6 +44,17 @@ var boundingBoxJoggles = map[int][]float64{
 	315: {3, 0.5},
 }
 
+var roadBoundingBoxJoggles = map[int][]float64{
+	0:   {1, 1}, // vertical, heading N
+	45:  {-2.5, 2}, // diagonal, heading NE
+	90:  {0, 1},
+	135: {2.5, 0.5},
+	180: {0, 1},
+	225: {-2, 3},
+	270: {0, -1},
+	315: {3, 2},
+}
+
 var uphillJoggles = map[int]float64 {
 	45: -1,
 	135: 0,
@@ -106,6 +117,78 @@ func WriteTemplates(m manifest.Manifest) {
 	}
 }
 
+func WriteRoadTemplates(m manifest.Manifest) {
+	lengths := []int{1,2,3,4,5,6,7,8}
+	scales := []float64{1,2}
+
+	for _, scale := range scales {
+		for _, length := range lengths {
+			WriteRoadTemplate(scale, length, m)
+		}
+	}
+}
+
+func WriteRoadTemplate(scale float64, length int, m manifest.Manifest) {
+	spritemap := make(map[int]manifest.Sprite)
+	tx := 0
+
+	for _, spr := range m.Sprites {
+		spr.X = tx
+		spritemap[int(spr.Angle)] = spr
+		tx += spr.Width + 8 // GoRender sprite spacing
+	}
+
+	produceFlatRoadTemplate("", scale, length, spritemap)
+}
+
+func produceFlatRoadTemplate(name string,scale float64, length int, spritemap map[int]manifest.Sprite) {
+	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
+
+	// Basic template
+	for i := 0; i < 360; i += 45 {
+		direction := i
+		spr := spritemap[(i+360)%360]
+
+		x := float64(spr.X) * scale
+		w := float64(spr.Width) * scale
+		h := float64(spr.Height) * scale
+
+		fscale := scale
+
+		xrel, yrel := getRoadRels(w, h, scale, length, direction, fscale)
+
+		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
+	}
+
+	fmt.Printf("}\n\n")
+}
+
+
+func getRoadRels(w float64, h float64, scale float64, length int, direction int, fscale float64) (xrel float64, yrel float64) {
+	// Set xrel and yrel to the middle of the object
+	xrel = -(w / 2)
+	yrel = -(h / 2)
+	yrel -= yjoggle * scale
+
+	// joggle top left to the centre of the unit
+	diff := float64(8-length) / 2
+
+	// Special handling for L4 vehicles
+	// not needed for road?
+	//if length == 4 {
+	//	diff -= 0.5
+	//}
+
+	xrel += unitShifts[direction][0] * diff * fscale
+	yrel += unitShifts[direction][1] * diff * fscale
+
+	// Get diagonal bounding boxes centred
+	xrel += roadBoundingBoxJoggles[direction][0] * fscale
+	yrel += roadBoundingBoxJoggles[direction][1] * fscale
+	return xrel, yrel
+}
+
+
 func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 	spritemap := make(map[int]manifest.Sprite)
 	tx := 0
@@ -135,6 +218,28 @@ func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 	}
 }
 
+func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, offsetWithinFile int, unitOffset int, spritemap map[int]manifest.Sprite) {
+	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
+
+	// Basic template
+	for i := angleOffset; i < 360; i += 45 {
+		direction := i - angleOffset
+		spr := spritemap[(i+360+shiftAngle)%360]
+
+		x := float64(spr.X + offsetWithinFile) * scale
+		w := float64(spr.Width) * scale
+		h := float64(spr.Height) * scale
+
+		fscale := scale
+
+		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset, offsetWithinFile)
+
+		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
+	}
+
+	fmt.Printf("}\n\n")
+}
+
 func produceHillTemplate(name string, scale float64, length int, hillJoggles map[int]float64, spritemap map[int]manifest.Sprite) {
 	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
 
@@ -159,28 +264,6 @@ func produceHillTemplate(name string, scale float64, length int, hillJoggles map
 		} else {
 			fmt.Printf("  [ 0, 0, 1, 1, 0, 0 ]\n")
 		}
-	}
-
-	fmt.Printf("}\n\n")
-}
-
-func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, offsetWithinFile int, unitOffset int, spritemap map[int]manifest.Sprite) {
-	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
-
-	// Basic template
-	for i := angleOffset; i < 360; i += 45 {
-		direction := i - angleOffset
-		spr := spritemap[(i+360+shiftAngle)%360]
-
-		x := float64(spr.X + offsetWithinFile) * scale
-		w := float64(spr.Width) * scale
-		h := float64(spr.Height) * scale
-
-		fscale := scale
-
-		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset, offsetWithinFile)
-
-		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
 	}
 
 	fmt.Printf("}\n\n")

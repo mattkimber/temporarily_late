@@ -8,6 +8,12 @@ import (
 	"os"
 )
 
+var isRoad bool
+
+func init() {
+	flag.BoolVar(&isRoad, "road", false, "Produce simpler templates for road vehicles")
+}
+
 func main() {
 	flag.Parse()
 	for _, filename := range flag.Args() {
@@ -27,5 +33,9 @@ func processFile(filename string) {
 		panic(fmt.Errorf("cannot parse file %s: %v", filename, err))
 	}
 
-	template.WriteTemplates(m)
+	if isRoad {
+		template.WriteRoadTemplates(m)
+	} else {
+		template.WriteTemplates(m)
+	}
 }
