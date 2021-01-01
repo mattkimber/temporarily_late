@@ -5,7 +5,7 @@ import (
 	"github.com/mattkimber/temporarily-late/internal/manifest"
 )
 
-const yjoggle = 3
+const yjoggle = 4
 
 // TTD bounding boxes
 
