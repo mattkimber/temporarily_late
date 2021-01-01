@@ -6,6 +6,7 @@ import (
 )
 
 const yjoggle = 4
+const road_y_joggle = 3
 
 // TTD bounding boxes
 
@@ -51,7 +52,7 @@ var roadBoundingBoxJoggles = map[int][]float64{
 	135: {2.5, 0.5},
 	180: {0, 1},
 	225: {-2, 3},
-	270: {0, -1},
+	270: {0, 1},
 	315: {3, 2},
 }
 
@@ -168,7 +169,7 @@ func getRoadRels(w float64, h float64, scale float64, length int, direction int,
 	// Set xrel and yrel to the middle of the object
 	xrel = -(w / 2)
 	yrel = -(h / 2)
-	yrel -= yjoggle * scale
+	yrel -= road_y_joggle * scale
 
 	// joggle top left to the centre of the unit
 	diff := float64(8-length) / 2
