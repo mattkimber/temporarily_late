@@ -105,7 +105,7 @@ var configs = map[int][]int{
 	16: {4, 8, 4},
 }
 
-func WriteTemplates(m manifest.Manifest) {
+func WriteTemplates(m manifest.Manifest, addAnimatedFlag bool) {
 	//scales := []int{1,2,4}
 	lengths := []int{4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 
@@ -113,23 +113,23 @@ func WriteTemplates(m manifest.Manifest) {
 
 	for _, scale := range scales {
 		for _, length := range lengths {
-			WriteTemplate(scale, length, m)
+			WriteTemplate(scale, length, m, addAnimatedFlag)
 		}
 	}
 }
 
-func WriteRoadTemplates(m manifest.Manifest) {
+func WriteRoadTemplates(m manifest.Manifest, addAnimatedFlag bool) {
 	lengths := []int{1,2,3,4,5,6,7,8}
 	scales := []float64{1,2}
 
 	for _, scale := range scales {
 		for _, length := range lengths {
-			WriteRoadTemplate(scale, length, m)
+			WriteRoadTemplate(scale, length, m, addAnimatedFlag)
 		}
 	}
 }
 
-func WriteRoadTemplate(scale float64, length int, m manifest.Manifest) {
+func WriteRoadTemplate(scale float64, length int, m manifest.Manifest, addAnimatedFlag bool) {
 	spritemap := make(map[int]manifest.Sprite)
 	tx := 0
 
@@ -139,11 +139,15 @@ func WriteRoadTemplate(scale float64, length int, m manifest.Manifest) {
 		tx += spr.Width + 8 // GoRender sprite spacing
 	}
 
-	produceFlatRoadTemplate("", scale, length, spritemap)
+	produceFlatRoadTemplate("", scale, length, spritemap, addAnimatedFlag)
 }
 
-func produceFlatRoadTemplate(name string,scale float64, length int, spritemap map[int]manifest.Sprite) {
-	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
+func produceFlatRoadTemplate(name string,scale float64, length int, spritemap map[int]manifest.Sprite, addAnimatedFlag bool) {
+	suffix := ""
+	if addAnimatedFlag {
+		suffix = "_anim"
+	}
+	fmt.Printf("template template_auto%s_%d%s_%dx() {\n", name, length, suffix, int(scale))
 
 	// Basic template
 	for i := 0; i < 360; i += 45 {
@@ -190,7 +194,7 @@ func getRoadRels(w float64, h float64, scale float64, length int, direction int,
 }
 
 
-func WriteTemplate(scale float64, length int, m manifest.Manifest) {
+func WriteTemplate(scale float64, length int, m manifest.Manifest, addAnimatedFlag bool) {
 	spritemap := make(map[int]manifest.Sprite)
 	tx := 0
 
@@ -206,21 +210,25 @@ func WriteTemplate(scale float64, length int, m manifest.Manifest) {
 	}
 
 	if m.IsHill {
-		produceHillTemplate("_up", scale, length, uphillJoggles, spritemap)
-		produceHillTemplate("_down", scale, length, downhillJoggles, spritemap)
+		produceHillTemplate("_up", scale, length, uphillJoggles, spritemap, addAnimatedFlag)
+		produceHillTemplate("_down", scale, length, downhillJoggles, spritemap, addAnimatedFlag)
 	} else if m.SliceLength > 0 && length > 8 {
-		produceFlatTemplate("_front", 0, scale, length, 0, 0, -1, spritemap)
-		produceFlatTemplate("_mid", 0, scale, length, 0, tx, 0, spritemap)
-		produceFlatTemplate("_rear", 0, scale, length, 0, tx*2, 1, spritemap)
+		produceFlatTemplate("_front", 0, scale, length, 0, 0, -1, spritemap, addAnimatedFlag)
+		produceFlatTemplate("_mid", 0, scale, length, 0, tx, 0, spritemap, addAnimatedFlag)
+		produceFlatTemplate("_rear", 0, scale, length, 0, tx*2, 1, spritemap, addAnimatedFlag)
 	} else if m.SliceLength == 0 {
-		produceFlatTemplate("", 0, scale, length, 0, 0, 0, spritemap)
-		produceFlatTemplate("_turn_1", 15, scale, length, 0, 0,0, spritemap)
-		produceFlatTemplate("_turn_2", 30, scale, length, -45, 0, 0, spritemap)
+		produceFlatTemplate("", 0, scale, length, 0, 0, 0, spritemap, addAnimatedFlag)
+		produceFlatTemplate("_turn_1", 15, scale, length, 0, 0,0, spritemap, addAnimatedFlag)
+		produceFlatTemplate("_turn_2", 30, scale, length, -45, 0, 0, spritemap, addAnimatedFlag)
 	}
 }
 
-func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, offsetWithinFile int, unitOffset int, spritemap map[int]manifest.Sprite) {
-	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
+func produceFlatTemplate(name string, angleOffset int, scale float64, length int, shiftAngle int, offsetWithinFile int, unitOffset int, spritemap map[int]manifest.Sprite, addAnimatedFlag bool) {
+	suffix := ""
+	if addAnimatedFlag {
+		suffix = "_anim"
+	}
+	fmt.Printf("template template_auto%s_%d%s_%dx() {\n", name, length,  suffix, int(scale))
 
 	// Basic template
 	for i := angleOffset; i < 360; i += 45 {
@@ -235,14 +243,22 @@ func produceFlatTemplate(name string, angleOffset int, scale float64, length int
 
 		xrel, yrel := getRels(w, h, scale, length, direction, fscale, unitOffset, offsetWithinFile)
 
-		fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
+		flag := ""
+		if addAnimatedFlag {
+			flag = ", ANIM"
+		}
+		fmt.Printf("  [ %d, 0, %d, %d, %d, %d%s ]\n", int(x), int(w), int(h), int(xrel), int(yrel), flag)
 	}
 
 	fmt.Printf("}\n\n")
 }
 
-func produceHillTemplate(name string, scale float64, length int, hillJoggles map[int]float64, spritemap map[int]manifest.Sprite) {
-	fmt.Printf("template template_auto%s_%d_%dx() {\n", name, length, int(scale))
+func produceHillTemplate(name string, scale float64, length int, hillJoggles map[int]float64, spritemap map[int]manifest.Sprite, addAnimatedFlag bool) {
+	suffix := ""
+	if addAnimatedFlag {
+		suffix = "_anim"
+	}
+	fmt.Printf("template template_auto%s_%d%s_%dx() {\n", name, length, suffix, int(scale))
 
 	// Basic template
 	for i := 0; i < 360; i += 45 {
@@ -261,7 +277,11 @@ func produceHillTemplate(name string, scale float64, length int, hillJoggles map
 			yrel += 0.25 * float64(length) * scale
 			yrel += hillJoggles[i] * scale
 
-			fmt.Printf("  [ %d, 0, %d, %d, %d, %d ]\n", int(x), int(w), int(h), int(xrel), int(yrel))
+			flag := ""
+			if addAnimatedFlag {
+				flag = ", ANIM"
+			}
+			fmt.Printf("  [ %d, 0, %d, %d, %d, %d%s ]\n", int(x), int(w), int(h), int(xrel), int(yrel), flag)
 		} else {
 			fmt.Printf("  [ 0, 0, 1, 1, 0, 0 ]\n")
 		}

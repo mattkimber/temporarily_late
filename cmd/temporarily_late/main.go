@@ -9,9 +9,11 @@ import (
 )
 
 var isRoad bool
+var aniFlag bool
 
 func init() {
 	flag.BoolVar(&isRoad, "road", false, "Produce simpler templates for road vehicles")
+	flag.BoolVar(&aniFlag, "anim", false, "Add the ANIM flag to output")
 }
 
 func main() {
@@ -34,8 +36,8 @@ func processFile(filename string) {
 	}
 
 	if isRoad {
-		template.WriteRoadTemplates(m)
+		template.WriteRoadTemplates(m, aniFlag)
 	} else {
-		template.WriteTemplates(m)
+		template.WriteTemplates(m, aniFlag)
 	}
 }
