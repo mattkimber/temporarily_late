@@ -35,21 +35,21 @@ var unitShifts = map[int][]float64{
 }
 
 var boundingBoxJoggles = map[int][]float64{
-	0:   {1, 0},
-	45:  {-3, 1},
-	90:  {0, -1},
-	135: {3, 0.5},
+	0:   {1, 0}, // vertical, heading N
+	45:  {-3, 1}, // diagonal, heading NE
+	90:  {0, -1}, // horizontal, heading E
+	135: {3, 0.5},  // diagonal, heading SE
 	180: {1, 0},
 	225: {-3, 1},
-	270: {0, -1},
+	270: {0, -1.5},
 	315: {3, 0.5},
 }
 
 var roadBoundingBoxJoggles = map[int][]float64{
 	0:   {1, 1}, // vertical, heading N
 	45:  {-2.5, 2}, // diagonal, heading NE
-	90:  {0, 1},
-	135: {2.5, 0.5},
+	90:  {0, 1}, // horizontal, heading E
+	135: {2.5, 0.5}, // diagonal, heading SE
 	180: {0, 1},
 	225: {-2, 3},
 	270: {0, 1},
@@ -96,8 +96,8 @@ var configs = map[int][]int{
 	7:  {2, 3, 2},
 	8:  {2, 4, 2},
 	9:  {2, 5, 2},
-	10: {3, 4, 3},
-	11: {3, 5, 3},
+	10: {4, 2, 4},
+	11: {4, 3, 4},
 	12: {4, 4, 4},
 	13: {4, 5, 4},
 	14: {4, 6, 4},
@@ -305,25 +305,12 @@ func getRels(w float64, h float64, scale float64, length int, direction int, fsc
 		sectionSize := configs[length][0]
 		sectionDiff := float64(sectionSize)
 		diff -= sectionDiff
-
-	}
-
-	if unitOffset == 0 && offsetWithinFile > 0 {
-		// mysterious alignment voodoo
-		if length == 10 || length == 11 {
-			diff += 1
-		}
 	}
 
 	if unitOffset == 1 {
 		sectionSize := configs[length][1]
 		sectionDiff := float64(sectionSize)
 		diff += sectionDiff
-
-		// mysterious alignment voodoo
-		if length == 10 || length == 11 {
-			diff -= 1
-		}
 	}
 
 	// Special handling for L4 vehicles
