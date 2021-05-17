@@ -40,8 +40,8 @@ var boundingBoxJoggles = map[int][]float64{
 	90:  {0, -1}, // horizontal, heading E
 	135: {3, 0.5},  // diagonal, heading SE
 	180: {1, 0},
-	225: {-3, 1},
-	270: {0, -1.5},
+	225: {-3, 0.5},
+	270: {0, -1},
 	315: {3, 0.5},
 }
 
