@@ -36,23 +36,23 @@ var unitShifts = map[int][]float64{
 
 var boundingBoxJoggles = map[int][]float64{
 	0:   {1, 0}, // vertical, heading N
-	45:  {-3, 1}, // diagonal, heading NE
-	90:  {0, -1}, // horizontal, heading E
+	45:  {-3, 1.5}, // diagonal, heading NE
+	90:  {0, -0.5}, // horizontal, heading E
 	135: {3, 0.5},  // diagonal, heading SE
 	180: {1, 0},
-	225: {-3, 0.5},
-	270: {0, -1},
+	225: {-3, 1.5},
+	270: {0, -0.5},
 	315: {3, 0.5},
 }
 
 var roadBoundingBoxJoggles = map[int][]float64{
 	0:   {1, 1}, // vertical, heading N
 	45:  {-2.5, 2}, // diagonal, heading NE
-	90:  {0, 1}, // horizontal, heading E
+	90:  {0, 2}, // horizontal, heading E
 	135: {2.5, 0.5}, // diagonal, heading SE
 	180: {0, 1},
 	225: {-2, 3},
-	270: {0, 1},
+	270: {0, 2},
 	315: {3, 2},
 }
 
@@ -177,12 +177,6 @@ func getRoadRels(w float64, h float64, scale float64, length int, direction int,
 
 	// joggle top left to the centre of the unit
 	diff := float64(8-length) / 2
-
-	// Special handling for L4 vehicles
-	// not needed for road?
-	//if length == 4 {
-	//	diff -= 0.5
-	//}
 
 	xrel += unitShifts[direction][0] * diff * fscale
 	yrel += unitShifts[direction][1] * diff * fscale
